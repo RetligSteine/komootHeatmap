@@ -486,17 +486,21 @@ loadGPX(function(tours) {
     for (var i = 0; i < tours.length; i++) {
         var parser = new gpxParser();
         parser.parse(tours[i]);
+        var distance = parser.tracks[0].distance.total;
+        if(distance < 1000000) {
+            var points = parser.tracks[0].points;
+            var gpx_latlngs = [];
 
-        var points = parser.tracks[0].points;
-        var gpx_latlngs = [];
+            for (var j = 0; j < points.length; j++) {
+                var latlng = new L.latLng(points[j].lat, points[j].lon, points[j].ele);
+                latlng.time = points[j].time
+                gpx_latlngs.push(latlng);
+            }
 
-        for (var j = 0; j < points.length; j++) {
-            var latlng = new L.latLng(points[j].lat, points[j].lon, points[j].ele);
-            latlng.time = points[j].time
-            gpx_latlngs.push(latlng);
+            convertedRoutes.push(gpx_latlngs);
+        } else {
+            console.log("BAD DISTANCE: " + distance);
         }
-
-        convertedRoutes.push(gpx_latlngs);
     }
 
     Visualizer.options["speed"].thresholds = equalDistribution(0, getSpeedMax(convertedRoutes), 9);
